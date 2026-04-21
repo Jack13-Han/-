@@ -27,7 +27,7 @@ if ($result) {
     $queryErrors[] = 'register テーブルの集計に失敗しました。';
 }
 
-$result = $conn->query("SELECT COUNT(*) AS total_reports, SUM(`報告` = '安全') AS safe_reports, SUM(`報告` = '安全じゃない') AS unsafe_reports FROM report");
+$result = $conn->query("SELECT COUNT(*) AS total_reports, SUM(`data` = '安全') AS safe_reports, SUM(`data` = '安全じゃない') AS unsafe_reports FROM report");
 if ($result) {
     $row = $result->fetch_assoc();
     $stats['total_reports'] = (int) ($row['total_reports'] ?? 0);
@@ -46,7 +46,7 @@ if ($result) {
     $queryErrors[] = '社員データの取得に失敗しました。';
 }
 
-$result = $conn->query("SELECT `社員番号`, `名前`, `部門`, `報告`, created_at FROM report ORDER BY created_at DESC LIMIT 5");
+$result = $conn->query("SELECT `emp_no`, `name`, `deployment`, `data`, created_at FROM report ORDER BY created_at DESC LIMIT 5");
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         $reports[] = $row;
@@ -83,7 +83,7 @@ if ($result) {
                 </div>
 
                 <nav class="nav nav-pills flex-column gap-2 mb-4">
-                    <a href="#" class="nav-link active"><i class="bi bi-grid-1x2-fill me-2"></i>ダッシュボード</a>
+                    <a href="index.php" class="nav-link active"><i class="bi bi-grid-1x2-fill me-2"></i>ダッシュボード</a>
                     <a href="#" class="nav-link"><i class="bi bi-people-fill me-2"></i>社員管理</a>
                     <a href="#" class="nav-link"><i class="bi bi-shield-check me-2"></i>安否報告</a>
                     <a href="#" class="nav-link"><i class="bi bi-gear-fill me-2"></i>設定</a>
@@ -208,14 +208,14 @@ if ($result) {
                                     <?php foreach ($reports as $report): ?>
                                         <div class="report-item">
                                             <div class="d-flex justify-content-between gap-2">
-                                                <h6 class="mb-1"><?php echo h($report['名前']); ?></h6>
-                                                <?php if ($report['報告'] === '安全'): ?>
+                                                <h6 class="mb-1"><?php echo h($report['name']); ?></h6>
+                                                <?php if ($report['data'] === '安全'): ?>
                                                     <span class="badge rounded-pill text-bg-success">安全</span>
                                                 <?php else: ?>
                                                     <span class="badge rounded-pill text-bg-warning">安全じゃない</span>
                                                 <?php endif; ?>
                                             </div>
-                                            <p class="small mb-1 text-muted">社員番号: <?php echo h($report['社員番号']); ?> / <?php echo h($report['部門']); ?></p>
+                                            <p class="small mb-1 text-muted">社員番号: <?php echo h($report['emp_no']); ?> / <?php echo h($report['deployment']); ?></p>
                                             <p class="small mb-0 text-muted"><?php echo h($report['created_at']); ?></p>
                                         </div>
                                     <?php endforeach; ?>
