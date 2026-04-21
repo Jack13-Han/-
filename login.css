@@ -93,5 +93,16 @@ body {
   text-align: left;
 }
 
+.error-message {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #f3b7b7;
+  border-radius: 10px;
+  background: #fff2f2;
+  color: #842029;
+  font-size: 14px;
+  text-align: left;
+}
+
 
 

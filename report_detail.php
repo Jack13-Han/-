@@ -1,57 +1,136 @@
 <?php
-
 require_once 'conn.php';
 
+function h($value)
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
+$detail = null;
+$queryError = '';
+$recordId = trim($_GET['id'] ?? '');
+
+if ($recordId === '' || !ctype_digit($recordId)) {
+    $queryError = 'URLに id を指定してください。例: report_detail.php?id=2250266';
+} else {
+    $sql = 'SELECT emp_no, name, deployment, comment, data, created_at FROM report WHERE emp_no = ? ORDER BY created_at DESC LIMIT 1';
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if ($stmt) {
+        $empNo = (int) $recordId;
+        mysqli_stmt_bind_param($stmt, 'i', $empNo);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $detail = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+
+        if (!$detail) {
+            $queryError = '指定された社員番号の報告データが見つかりませんでした。';
+        }
+    } else {
+        $queryError = '報告データの取得に失敗しました。';
+    }
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>報告詳細</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%);
+        }
+
+        .detail-card {
+            border: 0;
+            border-radius: 18px;
+            box-shadow: 0 12px 28px rgba(20, 37, 63, 0.08);
+        }
+
+        .detail-title {
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .label-box {
+            font-size: 0.82rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .value-box {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .comment-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 0.9rem;
+            min-height: 90px;
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
+
 <body>
-    <div class="card shadow-sm">
-                    <div class="card-body p-4">
-                        <h2 class="h5 mb-3">最新の報告</h2>
-                        <div class="table-responsive">
-                            <table class="table table-sm align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>日時</th>
-                                        <th>社員番号</th>
-                                        <th>名前</th>
-                                        <th>部署</th>
-                                        <th>状況</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($recentReports)): ?>
-                                        <?php foreach ($recentReports as $report): ?>
-                                            <tr>
-                                                <td><?php echo h($report['created_at']); ?></td>
-                                                <td><?php echo h($report['emp_no']); ?></td>
-                                                <td><?php echo h($report['name']); ?></td>
-                                                <td><?php echo h($report['deployment']); ?></td>
-                                                <td>
-                                                    <?php if ($report['data'] === '安全'): ?>
-                                                        <span class="badge text-bg-success">安全</span>
-                                                    <?php else: ?>
-                                                        <span class="badge text-bg-warning">安全じゃない</span>
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="5" class="text-center text-muted">報告データがありません。</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="h4 mb-0 detail-title">報告詳細</h1>
+            <a href="index.php" class="btn btn-outline-secondary btn-sm">ダッシュボードへ戻る</a>
+        </div>
+
+        <?php if ($queryError !== ''): ?>
+            <div class="alert alert-danger" role="alert"><?php echo h($queryError); ?></div>
+        <?php endif; ?>
+
+        <?php if ($detail): ?>
+            <div class="card detail-card">
+                <div class="card-body p-4 p-md-5">
+                    <div class="row g-4 mb-2">
+                        <div class="col-12 col-md-6">
+                            <div class="label-box">社員番号</div>
+                            <div class="value-box"><?php echo h($detail['emp_no']); ?></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="label-box">名前</div>
+                            <div class="value-box"><?php echo h($detail['name']); ?></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="label-box">部署</div>
+                            <div class="value-box"><?php echo h($detail['deployment']); ?></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="label-box">状況</div>
+                            <div class="value-box">
+                                <?php if ($detail['data'] === '安全'): ?>
+                                    <span class="badge text-bg-success">安全</span>
+                                <?php else: ?>
+                                    <span class="badge text-bg-warning">安全じゃない</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="label-box">コメント</div>
+                            <div class="comment-box"><?php echo h($detail['comment']); ?></div>
+                        </div>
+                        <div class="col-12">
+                            <div class="label-box">作成日時</div>
+                            <div class="value-box"><?php echo h($detail['created_at']); ?></div>
                         </div>
                     </div>
                 </div>
+            </div>
+        <?php endif; ?>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

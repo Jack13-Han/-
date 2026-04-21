@@ -1,10 +1,52 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+session_start();
+require_once "conn.php";
+
+
+// ログインボタンを押したとき
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $email = trim($_POST["email"]);
+    $password = trim($_POST["password"]);
+
+    // 入力チェック
+    if (empty($email) || empty($password)) {
+        $error = "メールアドレスとパスワードを入力してください。";
+    } else {
+        // ユーザー検索
+        $sql = "SELECT id, name, email, password FROM register WHERE email = ? LIMIT 1";
+
+        // プリペアドステートメント
+        $stmt = mysqli_prepare($conn, $sql);
+
+
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "s", $email);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $user = mysqli_fetch_assoc($result);
+            mysqli_stmt_close($stmt);
+
+            $isValidPassword = false;
+            if ($user) {
+
+                $storedPassword = (string) $user["password"];
+                $isValidPassword = ($password === $storedPassword) || password_verify($password, $storedPassword);
+            }
+
+            if ($isValidPassword) {
+                $_SESSION["id"] = $user["id"];
+                $_SESSION["name"] = $user["name"];
+                header("Location: report.php");
+                exit();
+            }
+
+            $error = "メールアドレスまたはパスワードが正しくありません。";
+        } else {
+            $error = "ログイン処理に失敗しました。もう一度お試しください。";
+        }
+    }
 }
 
-$flashMessage = $_SESSION['flash_message'] ?? '';
-unset($_SESSION['flash_message']);
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -12,7 +54,7 @@ unset($_SESSION['flash_message']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ログイン</title>
+    <title>login</title>
     <link rel="stylesheet" href="login.css">
 </head>
 
@@ -20,13 +62,10 @@ unset($_SESSION['flash_message']);
     <div class="login-container">
         <h2>こんにちは!</h2>
         <p>ABC 安全確認サイトへ...</p>
-        <?php if ($flashMessage !== ''): ?>
-            <div class="success-message"><?php echo htmlspecialchars($flashMessage, ENT_QUOTES, 'UTF-8'); ?></div>
-        <?php endif; ?>
         <form action="login.php" method="POST">
             <div class="form-group">
-                <label for="idnum">社員番号</label>
-                <input type="text" id="idnum" name="idnum" placeholder="あなたの社員番号" required>
+                <label for="email">メールアドレス</label>
+                <input type="email" id="email" name="email" placeholder="あなたのメールアドレス" required>
             </div>
             <div class="form-group">
                 <label for="password">パスワード</label>
@@ -34,7 +73,8 @@ unset($_SESSION['flash_message']);
             </div>
             <button type="submit" class="login-btn">ログイン</button>
         </form>
-        <div><a href="email.php">パスワードを忘れた方</a></div>
+        <?php if (isset($error)) echo $error; ?>
+        <div><a href="email.php">Forget Password</a></div>
 
     </div>
     </div>
