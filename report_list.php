@@ -2,6 +2,30 @@
 
 require_once 'conn.php';
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$loggedInUserId = filter_var($_SESSION['id'] ?? '', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1],
+]);
+$isAdmin = (int) ($_SESSION['is_admin'] ?? 0) === 1;
+
+if ($loggedInUserId !== false) {
+    $roleStmt = $conn->prepare('SELECT is_admin FROM register WHERE id = ? LIMIT 1');
+    if ($roleStmt) {
+        $roleStmt->bind_param('i', $loggedInUserId);
+        $roleStmt->execute();
+        $roleResult = $roleStmt->get_result();
+        $roleRow = $roleResult ? $roleResult->fetch_assoc() : null;
+        if ($roleRow) {
+            $isAdmin = (int) ($roleRow['is_admin'] ?? 0) === 1;
+            $_SESSION['is_admin'] = $isAdmin ? 1 : 0;
+        }
+        $roleStmt->close();
+    }
+}
+
 function h($value)
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
@@ -50,41 +74,43 @@ if ($result) {
     <div class="container-fluid">
         <div class="row min-vh-100">
 
-        <?php 
-        ?>
-            <aside class="col-12 col-lg-3 col-xl-2 sidebar-panel p-4 p-lg-3 p-xl-4">
-                <div class="brand-box mb-4">
-                    <p class="brand-kicker mb-1">防災管理システム</p>
-                    <h1 class="brand-title mb-0">管理者</h1>
-                </div>
+            <?php if ($isAdmin): ?>
+                <aside class="col-12 col-lg-3 col-xl-2 sidebar-panel p-4 p-lg-3 p-xl-4">
+                    <div class="brand-box mb-4">
+                        <p class="brand-kicker mb-1">防災管理システム</p>
+                        <h1 class="brand-title mb-0">管理者</h1>
+                    </div>
 
-                <nav class="nav nav-pills flex-column gap-2 mb-4">
-                    <a href="index.php" class="nav-link "><i class="bi bi-grid-1x2-fill me-2"></i>ダッシュボード</a>
-                    <a href="register_list.php" class="nav-link"><i class="bi bi-people-fill me-2"></i>社員管理</a>
-                    <a href="report_list.php" class="nav-link active"><i class="bi bi-shield-check me-2"></i>安否報告</a>
-                </nav>
+                    <nav class="nav nav-pills flex-column gap-2 mb-4">
+                        <a href="index.php" class="nav-link "><i class="bi bi-grid-1x2-fill me-2"></i>ダッシュボード</a>
+                        <a href="register_list.php" class="nav-link"><i class="bi bi-people-fill me-2"></i>社員管理</a>
+                        <a href="report_list.php" class="nav-link active"><i class="bi bi-shield-check me-2"></i>安否報告</a>
+                    </nav>
 
-                <div class="status-card mt-auto">
-                    <p class="mb-2 small text-uppercase">システム状況</p>
-                    <h6 class="mb-1">すべて正常に稼働中</h6>
-                    <p class="small mb-0 opacity-75">最終更新: <span id="liveTime">--:--:--</span></p>
-                </div>
-            </aside>
+                    <div class="status-card mt-auto">
+                        <p class="mb-2 small text-uppercase">システム状況</p>
+                        <h6 class="mb-1">すべて正常に稼働中</h6>
+                        <p class="small mb-0 opacity-75">最終更新: <span id="liveTime">--:--:--</span></p>
+                    </div>
+                </aside>
+            <?php endif; ?>
 
-            <main class="col-12 col-lg-9 col-xl-10 p-4 p-lg-4 p-xl-5 main-panel">
+            <main class="<?php echo $isAdmin ? 'col-12 col-lg-9 col-xl-10' : 'col-12'; ?> p-4 p-lg-4 p-xl-5 main-panel">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                     <div>
                         <p class="text-muted mb-1">災害情報 管理パネル</p>
                         <h2 class="mb-0 fw-bold"><?php echo h($pageTitle); ?></h2>
                     </div>
-                    <div class="d-flex gap-2">
-                        <a href="report.php" class="btn btn-outline-primary">
-                            <i class="bi bi-pencil-square me-1"></i>報告入力へ
-                        </a>
-                        <a href="index.php" class="btn btn-outline-secondary">
-                            <i class="bi bi-house-door me-1"></i>ダッシュボード
-                        </a>
-                    </div>
+                    <?php if ($isAdmin): ?>
+                        <div class="d-flex gap-2">
+                            <a href="report.php" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil-square me-1"></i>報告入力へ
+                            </a>
+                            <a href="index.php" class="btn btn-outline-secondary">
+                                <i class="bi bi-house-door me-1"></i>ダッシュボード
+                            </a>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <section class="panel-card">

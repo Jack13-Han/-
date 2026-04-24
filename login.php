@@ -13,10 +13,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "メールアドレスとパスワードを入力してください。";
     } else {
         // ユーザー検索
-        $sql = "SELECT id, name, email, password FROM register WHERE email = ? LIMIT 1";
+        $sql = "SELECT id, name, email, is_admin, password FROM register WHERE email = ? LIMIT 1";
 
         // プリペアドステートメント
         $stmt = mysqli_prepare($conn, $sql);
+
 
 
         if ($stmt) {
@@ -36,7 +37,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($isValidPassword) {
                 $_SESSION["id"] = $user["id"];
                 $_SESSION["email"] = $user["email"];
-                header("Location: report.php");
+                $_SESSION["is_admin"] = (int) ($user["is_admin"] ?? 0); // 管理者フラグをセッションに保存
+
+                if ($_SESSION["is_admin"] === 1) {
+                    header("Location: report.php");
+                } else {
+                    header("Location: report.php");
+                }
                 exit();
             }
 
