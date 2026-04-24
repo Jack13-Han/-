@@ -71,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         $stmt = $conn->prepare('INSERT INTO report (emp_no, name, deployment, comment, data) VALUES (?, ?, ?, ?, ?)');
         if ($stmt) {
+<<<<<<< HEAD
             try {
                 $empNo = (int) $loggedInUser['id'];
                 $name = (string) $loggedInUser['name'];
@@ -82,6 +83,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit;
                 }
 
+=======
+            $empNo = (int) $form['emp_no'];
+            $stmt->bind_param('issss', $empNo, $form['name'], $form['deployment'], $form['comment'], $form['data']);
+            if ($stmt->execute()) {
+                $_SESSION['flash_message'] = '安否報告を登録しました。';
+                header('Location: report_list.php');
+                exit;
+            } else {
+>>>>>>> d649488046073844a951b4b73d5d104a1a23928e
                 $errors[] = '保存に失敗しました。時間をおいて再度お試しください。';
             } catch (mysqli_sql_exception $exception) {
                 if ((int) $exception->getCode() === 1452) {
