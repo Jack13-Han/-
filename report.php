@@ -194,7 +194,7 @@ if ($result) {
                                 </div>
                                 <div class="col-12">
                                     <label for="deployment" class="form-label">部署</label>
-                                    <input type="text" class="form-control" id="deployment" value="<?php echo h($form['deployment']); ?>" disabled>
+                                    <input type="text" class="form-control" id="deployment" value="<?php echo h($form['deployment']); ?>" disabled  >
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label d-block">安否状況</label>
