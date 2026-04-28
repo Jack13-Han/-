@@ -71,6 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
+<<<<<<< HEAD
 <body class="bg-light">
     <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center py-5">
         <div class="row justify-content-center w-100">
@@ -83,6 +84,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <h1 class="h4 mb-1 fw-bold">ABC 安全確認サイト</h1>
                         <p class="mb-0 small opacity-75">ログインしてください</p>
                     </div>
+=======
+<body>
+    <div class="login-container">
+        <h2>こんにちは!</h2>
+        <p>ABC 安全確認サイトへ...</p>
+        <form action="login.php" method="POST">
+            <div class="form-group">
+                <label for="email">メールアドレス</label>
+                <input type="email" id="email" name="email" placeholder="あなたのメールアドレス" required>
+            </div>
+            <div class="form-group">
+                <label for="password">パスワード</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="login-btn">ログイン</button>
+        </form>
+        <?php if (isset($error)) echo $error; ?>
+        <div><a href="forgot_password.php">Forgot Password</a></div>
+>>>>>>> 4780c7566877be4dde5b6807c7a5c799f187c94c
 
                     <div class="card-body p-4 p-md-5">
                         <?php if (isset($error) && $error !== ''): ?>
