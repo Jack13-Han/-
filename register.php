@@ -1,5 +1,6 @@
 <?php
 require_once 'conn.php';
+require_once 'require_login.php';
 
 function h($value)
 {

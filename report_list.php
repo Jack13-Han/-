@@ -1,10 +1,7 @@
 <?php
 
 require_once 'conn.php';
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once 'require_login.php';
 
 $loggedInUserId = filter_var($_SESSION['id'] ?? '', FILTER_VALIDATE_INT, [
     'options' => ['min_range' => 1],
@@ -79,7 +76,6 @@ if ($result) {
 
     <div class="container-fluid">
         <div class="row min-vh-100">
-
             <?php if ($isAdmin): ?>
                 <aside class="col-12 col-lg-3 col-xl-2 sidebar-panel p-4 p-lg-3 p-xl-4">
                     <div class="brand-box mb-4">
@@ -115,8 +111,12 @@ if ($result) {
                             <a href="index.php" class="btn btn-outline-secondary">
                                 <i class="bi bi-house-door me-1"></i>ダッシュボード
                             </a>
+
                         </div>
                     <?php endif; ?>
+                    <a href="logout.php" class="btn btn-outline-danger">
+                        <i class="bi bi-box-arrow-right me-1"></i>ログアウト
+                    </a>
                 </div>
 
                 <section class="panel-card">

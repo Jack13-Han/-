@@ -1,9 +1,6 @@
 <?php
 require_once 'conn.php';
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once 'require_login.php';
 
 $loggedInUserId = filter_var($_SESSION['id'] ?? '', FILTER_VALIDATE_INT, [
     'options' => ['min_range' => 1],
@@ -30,6 +27,9 @@ function h($value)
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
+
+
+
 
 $detail = null;
 $queryError = '';

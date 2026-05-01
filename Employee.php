@@ -1,13 +1,13 @@
-
 <?php
 require_once 'conn.php';
+require_once 'require_login.php';
 
 
 $dsn = 'mysql:host=localhost:9900;dbname=災害;charset=utf8';
 
 
-    $db = new PDO($dsn, "root", "root"); // def.phpの定数を使用することを推奨（"dbuser"等を直接書かない）
-   
+$db = new PDO($dsn, "root", "root"); // def.phpの定数を使用することを推奨（"dbuser"等を直接書かない）
+
 $emp_no = filter_input(INPUT_GET, "id");
 
 function h($value)
@@ -26,6 +26,18 @@ $stats = [
 $employees = [];
 $reports = [];
 $queryErrors = [];
+$employee = null;
+
+if ($emp_no !== false && $emp_no !== null && $emp_no !== '') {
+    $employeeStmt = mysqli_prepare($conn, 'SELECT id, `name`, email, `phone`, `deployment`, `position`, is_admin FROM register WHERE id = ? LIMIT 1');
+    if ($employeeStmt) {
+        mysqli_stmt_bind_param($employeeStmt, 'i', $emp_no);
+        mysqli_stmt_execute($employeeStmt);
+        $employeeResult = mysqli_stmt_get_result($employeeStmt);
+        $employee = $employeeResult ? mysqli_fetch_assoc($employeeResult) : null;
+        mysqli_stmt_close($employeeStmt);
+    }
+}
 
 $result = $conn->query("SELECT COUNT(*) AS total_employees, SUM(is_admin = 1) AS admin_count FROM register");
 if ($result) {
@@ -91,8 +103,8 @@ if ($result) {
                     <h1 class="brand-title mb-0">社員詳細</h1>
                 </div>
 
-               
-                <div class="row g-4">
+
+                <main class="row g-4">
                     <div class="col-12 xl-col-8">
                         <section class="panel-card h-100">
                             <div class="panel-head d-flex justify-content-between align-items-center mb-3">
@@ -114,40 +126,36 @@ if ($result) {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                 <?php 
-                                             $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-                                             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                                             $sql = "SELECT * FROM register";
-                                             $where = "where id=$emp_no";
-                                           
-  ?>
+                                        <?php
+                                        $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+                                        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                                        $sql = "SELECT * FROM register";
+                                        $where = "where id=$emp_no";
 
-                                        <?php if (!empty($emp_no)): ?>
-                                         
-                                                <tr>
+                                        ?>
 
-                                                    
+                                        <?php if ($employee): ?>
 
-                                                    <td><?php $stmt = $db->prepare($sql . $where); ?></td>
-                                                    <td><?php echo h($employee['name']); ?></td>
-                                                    <td><?php echo h($employee['email']); ?></td>
-                                                    <td><?php echo h($employee['phone']); ?></td>
-                                                    <td><?php echo h($employee['deployment']); ?></td>
-                                                    <td><?php echo h($employee['position']); ?></td>
-                                                 
-                                                    <td>
-                                                        <?php if ((int) $employee['is_admin'] === 1): ?>
-                                                            <span class="badge rounded-pill text-bg-danger">管理者</span>
-                                                        <?php else: ?>
-                                                            <span class="badge rounded-pill text-bg-secondary">一般</span>
-                                                        <?php endif; ?>
-                                                    </td>
+                                            <tr>
+                                                <td><?php echo h($employee['name']); ?></td>
+                                                <td><?php echo h($employee['email']); ?></td>
+                                                <td><?php echo h($employee['phone']); ?></td>
+                                                <td><?php echo h($employee['deployment']); ?></td>
+                                                <td><?php echo h($employee['position']); ?></td>
 
-                                                     <td>
-                                                          <a href="Employee.php" class="box"><button class="btn btn-secondary">詳細</button> </a>
-                                                          </td> 
-                                                </tr>
-                                         
+                                                <td>
+                                                    <?php if ((int) $employee['is_admin'] === 1): ?>
+                                                        <span class="badge rounded-pill text-bg-danger">管理者</span>
+                                                    <?php else: ?>
+                                                        <span class="badge rounded-pill text-bg-secondary">一般</span>
+                                                    <?php endif; ?>
+                                                </td>
+
+                                                <td>
+                                                    <a href="Employee.php" class="box"><button class="btn btn-secondary">詳細</button> </a>
+                                                </td>
+                                            </tr>
+
                                         <?php else: ?>
                                             <tr>
                                                 <td colspan="7" class="text-center py-4 text-muted">データがありません。</td>
@@ -157,11 +165,11 @@ if ($result) {
                                 </table>
                             </div>
                         </section>
-                
 
-                   
-                </div>
-            </main>
+
+
+                    </div>
+                </main>
         </div>
     </div>
 

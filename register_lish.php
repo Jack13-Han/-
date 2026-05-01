@@ -1,5 +1,6 @@
 <?php
 require_once 'conn.php';
+require_once 'require_login.php';
 
 
 function h($value)
@@ -75,18 +76,18 @@ if ($result) {
 
     <div class="container-fluid">
         <div class="row min-vh-100">
-           <aside class="col-12 col-lg-3 col-xl-2 sidebar-panel p-4 p-lg-3 p-xl-4">
+            <aside class="col-12 col-lg-3 col-xl-2 sidebar-panel p-4 p-lg-3 p-xl-4">
                 <div class="brand-box mb-4">
                     <p class="brand-kicker mb-1">防災管理システム</p>
                     <h1 class="brand-title mb-0">管理者</h1>
                 </div>
- 
+
                 <nav class="nav nav-pills flex-column gap-2 mb-4">
                     <a href="index.php" class="nav-link "><i class="bi bi-grid-1x2-fill me-2"></i>ダッシュボード</a>
                     <a href="register_list.php" class="nav-link active"><i class="bi bi-people-fill me-2"></i>社員管理</a>
                     <a href="report_list.php" class="nav-link"><i class="bi bi-shield-check me-2"></i>安否報告</a>
                 </nav>
- 
+
                 <div class="status-card mt-auto">
                     <p class="mb-2 small text-uppercase">システム状況</p>
                     <h6 class="mb-1">すべて正常に稼働中</h6>
